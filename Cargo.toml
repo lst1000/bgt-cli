@@ -1,0 +1,20 @@
+[package]
+name = "bgt-cli"
+version = "0.1.0"
+edition = "2024"
+authors = ["Laurence Stock-Tully"]
+description = "A CLI tool for hybrid workers to track and project required office attendance for each quarter"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/lst1000/bgt-cli"
+homepage = "https://github.com/lst1000/bgt-cli"
+keywords = ["budget", "cli", "finance", "toml", "personal"]
+categories = ["command-line-utilities", "finance", "value-formatting"]
+include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE", "example.toml"]
+
+[dependencies]
+dirs = "6.0.0"
+toml = "0.8.23"
+regex = "1.11.1"
+indexmap = { version = "2.9.0", features = ["serde"] }
+serde = { version = "1.0.219", features = ["derive"] }

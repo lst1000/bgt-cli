@@ -1,0 +1,32 @@
+[Income]
+Salary = 0
+Allowance = 0
+Bonus = 0
+Misc = 0
+Pension = 0
+
+[Income.Overtime]
+"1.5" = 0
+"2.0" = 0
+"2.5" = 0
+
+[Expenses]
+Mortgage = 0
+Council_Tax = 0
+Credit_Cards = 0
+Internet = 0
+Electicity = 0
+Water = 0
+Subscriptions = 0
+Savings = 0
+Investments = 0
+
+[Tax]
+BR_Threshold = 12570
+BR_Rate = 0.2
+HR_Threshold = 50000
+HR_Rate = 0.4
+P_Threshold = 12570
+P_Rate = 0.08
+U_Threshold = 50270
+U_Rate = 0.02
