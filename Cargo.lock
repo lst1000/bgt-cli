@@ -13,13 +13,14 @@ dependencies = [
 
 [[package]]
 name = "bgt-cli"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "dirs",
  "indexmap",
  "regex",
  "serde",
  "toml",
+ "uk-tax",
 ]
 
 [[package]]
@@ -275,6 +276,12 @@ name = "toml_write"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
+
+[[package]]
+name = "uk-tax"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9402958f4bac490a5cd449030157f107e026fe81e94a155eb906b47f9056fd93"
 
 [[package]]
 name = "unicode-ident"

@@ -1,4 +1,7 @@
 use std::fs;
+use uk_tax::tax_years;
+use uk_tax::it::income_tax;
+use uk_tax::ni::national_insurance;
 use std::path::PathBuf;
 use std::process::Command;
 use std::collections::HashMap;
@@ -32,22 +35,10 @@ struct Income {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct Tax {
-    #[serde(rename = "BR_Threshold")]
-    br_threshold: f64,
-    #[serde(rename = "BR_Rate")]
-    br_rate: f64,
-    #[serde(rename = "HR_Threshold")]
-    hr_threshold: f64,
-    #[serde(rename = "HR_Rate")]
-    hr_rate: f64,
-    #[serde(rename = "P_Threshold")]
-    p_threshold: f64,
-    #[serde(rename = "P_Rate")]
-    p_rate: f64,
-    #[serde(rename = "U_Threshold")]
-    u_threshold: f64,
-    #[serde(rename = "U_Rate")]
-    u_rate: f64,
+    #[serde(rename = "Year")]
+    year: u32,
+    #[serde(rename = "Personal_Allowance")]
+    personal_allowance: Option<u32>,
 }
 
 fn edit_config(config_path: &std::path::Path) {
@@ -85,7 +76,7 @@ fn config_search(fname: &str) -> PathBuf {
 
 fn print_help() {
     println!(
-        "bgt-cli v0.1.2\nUsage: bgt-cli [OPTIONS]
+        "bgt-cli v0.2.0\nUsage: bgt-cli [OPTIONS]
 
 Options:
     -f YYYY-MM          Print the the specified budget 
@@ -106,23 +97,33 @@ fn print_error(message: &str) {
     std::process::exit(1);
 }
 
-fn tax(gross: f64, b_thold: f64, b_rate: f64, h_thold: f64, h_rate: f64) -> f64 {
-    if gross > h_thold {
-        let h_amt = gross - h_thold;
-        let b_amt = h_thold - b_thold;
-        return (h_amt * h_rate) + (b_amt * b_rate);
-    } else if gross > b_thold {
-        return (gross - b_thold) * b_rate;
-    }
-    0.0
-}
-
 fn validate_fname(fname: &str) -> Result<(), String> {
     let rx = Regex::new(r"^\d{4}-(0[1-9]|1[0-2])$").unwrap();
     if rx.is_match(fname) {
         Ok(())
     } else {
        Err(format!("Invalid File Name: '{}' - Please Use: YYYY-MM", fname))
+    }
+}
+
+fn tax_year(year: u32) -> &'static tax_years::TaxYear {
+    match year {
+        2025 => &tax_years::TAX_YEAR_2025,
+        2024 => &tax_years::TAX_YEAR_2024,
+        2023 => &tax_years::TAX_YEAR_2023,
+        2022 => &tax_years::TAX_YEAR_2022,
+        2021 => &tax_years::TAX_YEAR_2021,
+        2020 => &tax_years::TAX_YEAR_2020,
+        2019 => &tax_years::TAX_YEAR_2019,
+        2018 => &tax_years::TAX_YEAR_2018,
+        2017 => &tax_years::TAX_YEAR_2017,
+        2016 => &tax_years::TAX_YEAR_2016,
+        2015 => &tax_years::TAX_YEAR_2015,
+        2014 => &tax_years::TAX_YEAR_2014,
+        2013 => &tax_years::TAX_YEAR_2013,
+        2012 => &tax_years::TAX_YEAR_2012,
+        2011 => &tax_years::TAX_YEAR_2011,
+        _ => panic!("Unsupported Tax Year: {}", year),
     }
 }
 
@@ -196,19 +197,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let gross_pay = budget.income.salary + budget.income.allowance + 
-                    overtime_pay + budget.income.bonus + budget.income.misc + budget.income.pension;
+    let gross_pay = budget.income.salary 
+        + budget.income.allowance 
+        + overtime_pay 
+        + budget.income.bonus 
+        + budget.income.misc 
+        + budget.income.pension;
 
-    let it = tax(gross_pay, budget.tax.br_threshold / 12.0, 
-                 budget.tax.br_rate, budget.tax.hr_threshold / 12.0, budget.tax.hr_rate);
+    let annual_gross_pay = gross_pay * 12.0;
 
-    let ni = tax(gross_pay, budget.tax.p_threshold / 12.0, 
-                 budget.tax.p_rate, budget.tax.u_threshold / 12.0, budget.tax.u_rate);
+    let t_year = tax_year(budget.tax.year);
+    let p_allowance = budget.tax.personal_allowance;
+
+    let it_annual = income_tax(annual_gross_pay, t_year, p_allowance).unwrap();
+    let ni_annual = national_insurance(annual_gross_pay, t_year, None);
+
+    let it = it_annual / 12.0;
+    let ni = ni_annual / 12.0;
 
     let net_pay = gross_pay - (it + ni);
 
     let total_expenses: f64 = budget.expenses.iter().map(|e| *e.1).sum();
-
     let surplus: f64 = net_pay - total_expenses;
 
     println!("{:<23} {:>6}", "Income", "Amount");

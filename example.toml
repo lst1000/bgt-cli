@@ -22,11 +22,5 @@ Savings = 0
 Investments = 0
 
 [Tax]
-BR_Threshold = 12570
-BR_Rate = 0.2
-HR_Threshold = 50000
-HR_Rate = 0.4
-P_Threshold = 12570
-P_Rate = 0.08
-U_Threshold = 50270
-U_Rate = 0.02
+Year = "2025" # Tax year (e.g. "2025" for the 2025/26 tax year)
+# Personal_Allowance = 12570 # This can be uncommented to override the default personal allowance (in pounds)
