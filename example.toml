@@ -22,5 +22,5 @@ Savings = 0
 Investments = 0
 
 [Tax]
-Year = "2025" # Tax year (e.g. "2025" for the 2025/26 tax year)
+Year = 2025 # Tax year (e.g. "2025" for the 2025/26 tax year)
 # Personal_Allowance = 12570 # This can be uncommented to override the default personal allowance (in pounds)

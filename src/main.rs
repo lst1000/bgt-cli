@@ -76,7 +76,7 @@ fn config_search(fname: &str) -> PathBuf {
 
 fn print_help() {
     println!(
-        "bgt-cli v0.2.0\nUsage: bgt-cli [OPTIONS]
+        "bgt-cli v0.2.1\nUsage: bgt-cli [OPTIONS]
 
 Options:
     -f YYYY-MM          Print the the specified budget 
