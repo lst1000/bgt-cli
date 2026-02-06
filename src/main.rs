@@ -1,13 +1,13 @@
-use std::fs;
-use uk_tax::tax_years;
-use uk_tax::it::income_tax;
-use uk_tax::ni::national_insurance;
-use std::path::PathBuf;
-use std::process::Command;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 use regex::Regex;
 use serde::Deserialize;
-use indexmap::IndexMap;
+use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
+use std::process::Command;
+use uk_tax::it::income_tax;
+use uk_tax::ni::national_insurance;
+use uk_tax::tax_years;
 
 const EXAMPLE_TOML: &str = include_str!("../example.toml");
 
@@ -29,7 +29,7 @@ struct Income {
     bonus: f64,
     misc: f64,
     pension: f64,
-    overtime: Option<HashMap<String, f64>>
+    overtime: Option<HashMap<String, f64>>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -47,18 +47,20 @@ fn edit_config(config_path: &std::path::Path) {
         .arg(config_path)
         .status()
         .expect("Failed to Open Editor");
-    
+
     if !status.success() {
         eprintln!("Failed to Edit the Budget File");
     }
 }
 
 fn create_config(config_path: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
-    let config_dir = dirs::config_dir().expect("Configuration Directory Not Found").join("bgt-cli");
+    let config_dir = dirs::config_dir()
+        .expect("Configuration Directory Not Found")
+        .join("bgt-cli");
     let config_file = config_dir.join(format!("{}", config_path.to_string_lossy()));
 
     fs::create_dir_all(&config_dir)?;
-    
+
     if !config_file.exists() {
         fs::write(&config_file, EXAMPLE_TOML)?;
         println!("\x1b[1mCreated config at {}\x1b[0m", config_file.display());
@@ -68,7 +70,7 @@ fn create_config(config_path: &std::path::Path) -> Result<(), Box<dyn std::error
 }
 
 fn config_search(fname: &str) -> PathBuf {
-    let filename = format!("{}.toml", fname);
+    let filename = format!("{fname}.toml");
     let config_dir = dirs::config_dir().expect("Configuration Directory Not Found");
 
     config_dir.join("bgt-cli").join(filename)
@@ -76,7 +78,7 @@ fn config_search(fname: &str) -> PathBuf {
 
 fn print_help() {
     println!(
-        "bgt-cli v0.2.2\nUsage: bgt-cli [OPTIONS]
+        "bgt-cli v0.2.3\nUsage: bgt-cli [OPTIONS]
 
 Options:
     -f YYYY-MM          Print the the specified budget 
@@ -92,7 +94,7 @@ Configuration File:
 }
 
 fn print_error(message: &str) {
-    eprintln!("Error: {}", message);
+    eprintln!("Error: {message}");
     eprintln!("Use '-h' to see available options");
     std::process::exit(1);
 }
@@ -102,12 +104,15 @@ fn validate_fname(fname: &str) -> Result<(), String> {
     if rx.is_match(fname) {
         Ok(())
     } else {
-       Err(format!("Invalid File Name: '{}' - Please Use: YYYY-MM", fname))
+        Err(format!(
+            "Invalid File Name: '{fname}' - Please Use: YYYY-MM"
+        ))
     }
 }
 
 fn tax_year(year: u32) -> &'static tax_years::TaxYear {
     match year {
+        2026 => &tax_years::TAX_YEAR_2026,
         2025 => &tax_years::TAX_YEAR_2025,
         2024 => &tax_years::TAX_YEAR_2024,
         2023 => &tax_years::TAX_YEAR_2023,
@@ -123,7 +128,7 @@ fn tax_year(year: u32) -> &'static tax_years::TaxYear {
         2013 => &tax_years::TAX_YEAR_2013,
         2012 => &tax_years::TAX_YEAR_2012,
         2011 => &tax_years::TAX_YEAR_2011,
-        _ => panic!("Unsupported Tax Year: {}", year),
+        _ => panic!("Unsupported Tax Year: {year}"),
     }
 }
 
@@ -131,7 +136,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() < 2 {
-        print_error(&format!("No Arguments Specified"));
+        print_error("No Arguments Specified");
     }
 
     if args.len() == 2 && args[1] == "-h" {
@@ -142,7 +147,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.len() == 2 && args[1] != "-h" {
         print_error(&format!("Invalid Argument '{}'", args[1]));
     }
-    
+
     let config_path = config_search(&args[2]);
 
     if args.len() > 2 {
@@ -178,7 +183,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             return Ok(());
         } else {
-            print_error(&format!("Invalid Argument '{}'", arg));
+            print_error(&format!("Invalid Argument '{arg}'"));
         }
     }
 
@@ -197,11 +202,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let gross_pay = budget.income.salary 
-        + budget.income.allowance 
-        + overtime_pay 
-        + budget.income.bonus 
-        + budget.income.misc 
+    let gross_pay = budget.income.salary
+        + budget.income.allowance
+        + overtime_pay
+        + budget.income.bonus
+        + budget.income.misc
         + budget.income.pension;
 
     let annual_gross_pay = gross_pay * 12.0;
@@ -228,7 +233,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("{:<23} £ {:>9.2}", "Bonus", budget.income.bonus);
     println!("{:<23} £ {:>9.2}", "Misc", budget.income.misc);
     println!("{:<23} £ {:>9.2}", "Pension", budget.income.pension);
-    
+
     println!("\x1b[1m{:<23} £ {:>9.2}\x1b[0m", "Gross Pay", gross_pay);
     println!("\n{:<23} £ {:>9.2}", "Income Tax", it);
     println!("{:<23} £ {:>9.2}", "National Ins", ni);
@@ -238,11 +243,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("\n{:<23} {:>6}", "Expense", "Amount");
     for (name, amount) in &budget.expenses {
-        println!("{:<23} £ {:>9.2}", name, amount);
+        println!("{name:<23} £ {amount:>9.2}");
     }
-    println!("\x1b[1m{:<23} £ {:>9.2}\x1b[0m", "Total Expenses", total_expenses);
+    println!(
+        "\x1b[1m{:<23} £ {:>9.2}\x1b[0m",
+        "Total Expenses", total_expenses
+    );
 
-    if surplus >=0.0 {
+    if surplus >= 0.0 {
         println!("\n\x1b[32m{:<23} £ {:>9.2}\x1b[0m", "Surplus", surplus);
     } else {
         println!("\n\x1b[31m{:<23} £ {:>9.2}\x1b[0m", "Surplus", surplus);
