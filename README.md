@@ -37,9 +37,9 @@ bgt-cli [-f YYYY-MM | -c YYYY-MM | -e YYYY-MM | -h]
 
 The program expects a TOML file named `YYYY-MM.toml` stored in your system’s config directory.  
 Example paths:
-- Linux: `~/.config/bgt-cli/2025-08.toml`
-- macOS: `~/Library/Application Support/bgt-cli/2025-08.toml`
-- Windows: `%APPDATA%\bgt-cli\2025-08.toml`
+- Linux: `~/.config/bgt-cli/<YYYY-MM>.toml`
+- macOS: `~/Library/Application Support/bgt-cli/<YYYY-MM>.toml`
+- Windows: `~\AppData\Roaming\bgt-cli\<YYYY-MM>.toml`
 
 This file should include the following sections:
 

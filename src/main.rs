@@ -42,7 +42,20 @@ struct Tax {
 }
 
 fn edit_config(config_path: &std::path::Path) {
-    let editor = std::env::var("EDITOR").unwrap_or_else(|_| "nano".to_string());
+    let editor = match std::env::var("EDITOR") {
+        Ok(editor) => editor,
+        Err(_) => {
+            #[cfg(target_os = "windows")]
+            {
+                "notepad.exe".to_string()
+            }
+            #[cfg(not(target_os = "windows"))]
+            {
+                "nano".to_string()
+            }
+        }
+    };
+
     let status = Command::new(editor)
         .arg(config_path)
         .status()
@@ -78,7 +91,7 @@ fn config_search(fname: &str) -> PathBuf {
 
 fn print_help() {
     println!(
-        "bgt-cli v0.2.3\nUsage: bgt-cli [OPTIONS]
+        "bgt-cli v0.2.4\nUsage: bgt-cli [OPTIONS]
 
 Options:
     -f YYYY-MM          Print the the specified budget 
@@ -89,7 +102,8 @@ Options:
 Configuration File:
     This program looks for the configuration file in:
         macOS: ~/Library/Application Support/bgt-cli/<YYYY-MM>.toml
-        Linux: ~/.config/bgt-cli/<YYYY-MM>.toml"
+        Linux: ~/.config/bgt-cli/<YYYY-MM>.toml
+        Windows: ~\\AppData\\Roaming\\bgt-cli\\<YYYY-MM>.toml"
     );
 }
 
